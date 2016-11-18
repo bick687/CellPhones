@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">Cell Phones</string>
+    <string name="empty_text_title">There are no cellphones</string>
+    <string name="subtitle_empty_text">Zero Cellphone found</string>
+    <string name="cellphone_specs">Cellphone specs</string>
+    <string name="edit_cellphone_name">Edit Cellphone Name</string>
+    <string name="specs">Specs</string>
+    <string name="price_unit_dollars">$</string>
+    <string name="edit_cell_quantity">Edit quantity</string>
+    <string name="add_new_cellphone">Add a new cellphone</string>
+    <string name="edit_cellphone">Edit Cellphone</string>
+    <string name="delete">Delete</string>
+    <string name="save_cellphone">Save</string>
+    <string name="cellphone_insert_failed">Cellphone insert failed.</string>
+    <string name="cellphone_insert_successful">Cellphone insert successful.</string>
+    <string name="cellphone_update_failed">Cellphone update failed.</string>
+    <string name="cellphone_update_successful">Cellphone update successful.</string>
+    <string name="cellphone_deleted_successfully">Cellphone deleted successfully</string>
+    <string name="cancel">Cancel</string>
+    <string name="cellphone_deletion_failed">Cellphone deletion failed.</string>
+    <string name="cellphone_deletion_successful">Cellphone deletion successful.</string>
+    <string name="unsaved_dialog_msg">Unsaved changes</string>
+    <string name="discard">Discard</string>
+    <string name="keep_editing_msg">Keep editing</string>
+    <string name="price">Price</string>
+    <string name="cellphone_name">Cellphone Name</string>
+</resources>
