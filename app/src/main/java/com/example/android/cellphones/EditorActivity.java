@@ -45,8 +45,7 @@ public class EditorActivity extends AppCompatActivity
     private static final int PICK_IMAGE_REQUEST = 0;
     private static final int SEND_MAIL_REQUEST = 1;
     private static final String STATE_URI = "STATE_URI";
-    /**
-     * EditText field to enter the cellphone's name
+    /**     * EditText field to enter the cellphone's name
      */
     private EditText mNameEditText;
     /**
