@@ -73,6 +73,8 @@ public class EditorActivity extends AppCompatActivity
     // Add image button
     private Button mAddImageButton;
 
+    private boolean mSaleHasChanged = false;
+
     // Set up an onTouchListener
     private View.OnTouchListener mTouchListener = new View.OnTouchListener() {
         @Override
@@ -133,7 +135,6 @@ public class EditorActivity extends AppCompatActivity
         mPriceEditText.setOnTouchListener(mTouchListener);
         mQuantityEditText.setOnTouchListener(mTouchListener);
         mAddImageButton.setOnTouchListener(mTouchListener);
-
     }
 
     // Check if user entered the information correctly
@@ -168,27 +169,51 @@ public class EditorActivity extends AppCompatActivity
         // Inflate the menu options from the res/menu/menu_editor.xml file.
         // This adds menu items to the app bar.
         getMenuInflater().inflate(R.menu.menu_editor, menu);
+
+        MenuItem saleItem = menu.findItem(R.id.action_sale);
+        saleItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                mSaleHasChanged = true;
+                return false;
+            }
+        });
         return true;
     }
 
     // Create method for sale of a cellphone. Update the quantity field with the new quantity
-    private void saleCellPhone(){
+    private void saleCellPhone() {
         String quantityString = mQuantityEditText.getText().toString().trim();
         int quantityInteger = Integer.parseInt(quantityString);
 
-        if (quantityInteger >=1 ) {
+        if (quantityInteger == 0) {
+            Toast.makeText(this, "There are no more items to sell.", Toast.LENGTH_SHORT).show();
+        } else {
             int updatedQuantity = quantityInteger - 1;
             ContentValues values = new ContentValues();
             values.put(PhoneEntry.COLUMN_PHONE_QUANTITY, updatedQuantity);
-
             mQuantityEditText.setText(Integer.toString(updatedQuantity));
-
-        } else {
-            Toast.makeText(this, "There are no more items to sell.", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void saveCellPhone() {
+        if (mCurrentPhoneUri != null && mSaleHasChanged) {
+            String quantityString = mQuantityEditText.getText().toString().trim();
+            ContentValues values = new ContentValues();
+            values.put(PhoneEntry.COLUMN_PHONE_QUANTITY, quantityString);
+            int rowsAffected = getContentResolver().update(mCurrentPhoneUri, values, null, null);
+
+            // Show a toast message depending on whether or not the update was successful.
+            if (rowsAffected == 0) {
+                // If no rows were affected, then there was an error with the update.
+                Toast.makeText(this, R.string.cellphone_update_failed,
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                // Otherwise, the update was successful and we can display a toast.
+                Toast.makeText(this, R.string.cellphone_update_successful,
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
 
         // If there are no changes detected, return to previous activity without saving.
         if (!mCellPhoneHasChanged) {
@@ -314,6 +339,9 @@ public class EditorActivity extends AppCompatActivity
                 checkSubmission();
                 finish();
                 return true;
+            case R.id.action_sale:
+                saleCellPhone();
+                return true;
             // Respond to a click on the "Delete" menu option
             case R.id.action_delete:
                 // Show the confirmation dialog
@@ -323,7 +351,7 @@ public class EditorActivity extends AppCompatActivity
             case android.R.id.home:
                 // If the cellphone hasn't changed, continue with navigating up to parent activity
                 // which is the {@link CatalogActivity}.
-                if (!mCellPhoneHasChanged) {
+                if (!mCellPhoneHasChanged && !mSaleHasChanged) {
                     NavUtils.navigateUpFromSameTask(EditorActivity.this);
                     return true;
                 }
@@ -400,7 +428,7 @@ public class EditorActivity extends AppCompatActivity
 
             // If there's no image uploaded, do not try to parse the image link. Set the ImageView
             // null.
-            if (image == null){
+            if (image == null) {
                 mCellphoneImageView.setImageURI(null);
             } else {
                 mCellphoneImageView.setImageURI(Uri.parse(image));
@@ -419,8 +447,8 @@ public class EditorActivity extends AppCompatActivity
 
     // On click method for the image upload
     public void UploadImage(View v) {
-            openImageSelector();
-        }
+        openImageSelector();
+    }
 
     public void openImageSelector() {
         Intent intent;
@@ -439,32 +467,32 @@ public class EditorActivity extends AppCompatActivity
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
         super.onActivityResult(requestCode, resultCode, resultData);
-             // The ACTION_OPEN_DOCUMENT intent was sent with the request code READ_REQUEST_CODE.
-            // If the request code seen here doesn't match, it's the response to some other intent,
-            // and the below code shouldn't run at all.
+        // The ACTION_OPEN_DOCUMENT intent was sent with the request code READ_REQUEST_CODE.
+        // If the request code seen here doesn't match, it's the response to some other intent,
+        // and the below code shouldn't run at all.
 
-            if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK) {
-                // The document selected by the user won't be returned in the intent.
-                // Instead, a URI to that document will be contained in the return intent
-                // provided to this method as a parameter.  Pull that uri using "resultData.getData()"
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK) {
+            // The document selected by the user won't be returned in the intent.
+            // Instead, a URI to that document will be contained in the return intent
+            // provided to this method as a parameter.  Pull that uri using "resultData.getData()"
 
-                // URI for the image to be uploaded. Convert the link to a string
-                Uri selectedImage = resultData.getData();
-                mImageLink = selectedImage.toString();
+            // URI for the image to be uploaded. Convert the link to a string
+            Uri selectedImage = resultData.getData();
+            mImageLink = selectedImage.toString();
 
-                try {
-                    Bitmap d = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
-                    // Find the ImageView
-                    ImageView imageView = (ImageView) findViewById(R.id.cellphone_image);
-                    // Set the image in the imageView after decoding the String
-                    imageView.setImageBitmap(getBitmapFromUri(selectedImage));
+            try {
+                Bitmap d = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
+                // Find the ImageView
+                ImageView imageView = (ImageView) findViewById(R.id.cellphone_image);
+                // Set the image in the imageView after decoding the String
+                imageView.setImageBitmap(getBitmapFromUri(selectedImage));
 
-                } catch (IOException e) {
-                    Toast.makeText(this, "Something went wrong", Toast.LENGTH_LONG)
-                            .show();
-                }
+            } catch (IOException e) {
+                Toast.makeText(this, "Something went wrong", Toast.LENGTH_LONG)
+                        .show();
             }
         }
+    }
 
 
     public Bitmap getBitmapFromUri(Uri uri) {
@@ -559,7 +587,7 @@ public class EditorActivity extends AppCompatActivity
     @Override
     public void onBackPressed() {
         // If the cellphone hasn't changed, continue with handling back button press
-        if (!mCellPhoneHasChanged) {
+        if (!mCellPhoneHasChanged && !mSaleHasChanged) {
             super.onBackPressed();
             return;
         }
