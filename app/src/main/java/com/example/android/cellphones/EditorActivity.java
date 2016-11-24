@@ -73,7 +73,7 @@ public class EditorActivity extends AppCompatActivity
     // Add image button
     private Button mAddImageButton;
 
-    private boolean mSaleHasChanged = false;
+    private boolean mQuantityHasChanged = false;
 
     // Set up an onTouchListener
     private View.OnTouchListener mTouchListener = new View.OnTouchListener() {
@@ -174,7 +174,16 @@ public class EditorActivity extends AppCompatActivity
         saleItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
-                mSaleHasChanged = true;
+                mQuantityHasChanged = true;
+                return false;
+            }
+        });
+
+        MenuItem receivedItem = menu.findItem(R.id.action_receive);
+        receivedItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                mQuantityHasChanged = true;
                 return false;
             }
         });
@@ -196,12 +205,23 @@ public class EditorActivity extends AppCompatActivity
         }
     }
 
+    // Create method to update the quantity when shipment is received.
+    private void shipmentReceived() {
+        String quantityString = mQuantityEditText.getText().toString().trim();
+        int quantityInteger = Integer.parseInt(quantityString);
+        int updatedQuantity = quantityInteger + 100;
+        ContentValues values = new ContentValues();
+        values.put(PhoneEntry.COLUMN_PHONE_QUANTITY, updatedQuantity);
+        mQuantityEditText.setText(Integer.toString(updatedQuantity));
+    }
+
     private void saveCellPhone() {
-        if (mCurrentPhoneUri != null && mSaleHasChanged) {
+        if (mCurrentPhoneUri != null && mQuantityHasChanged) {
             String quantityString = mQuantityEditText.getText().toString().trim();
             ContentValues values = new ContentValues();
             values.put(PhoneEntry.COLUMN_PHONE_QUANTITY, quantityString);
             int rowsAffected = getContentResolver().update(mCurrentPhoneUri, values, null, null);
+            Toast.makeText(this, "Cellphone sale successful.", Toast.LENGTH_SHORT).show();
 
             // Show a toast message depending on whether or not the update was successful.
             if (rowsAffected == 0) {
@@ -277,6 +297,22 @@ public class EditorActivity extends AppCompatActivity
         }
     }
 
+    public void orderCellphonePack() {
+        String subject = "Reorder 100 pack of " + mNameEditText.getText();
+        String message = "Product Name: " + mNameEditText.getText() +
+                "\nProduct Price: " + mPriceEditText.getText() +
+                "\nQuantity to be ordered: 100 pack";
+        String email = "vendor@gmail.com";
+        Intent intent = new Intent(Intent.ACTION_SENDTO);
+        intent.setData(Uri.parse("mailto:")); // only email apps should handle this
+        intent.putExtra(Intent.EXTRA_EMAIL, email);
+        intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+        intent.putExtra(Intent.EXTRA_TEXT, message);
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        }
+    }
+
     private void showDeleteConfirmationDialog() {
         // Create an AlertDialog.Builder and set the message, and click listeners
         // for the positive and negative buttons on the dialog.
@@ -339,8 +375,17 @@ public class EditorActivity extends AppCompatActivity
                 checkSubmission();
                 finish();
                 return true;
+            // Respond to a click on the "Sale" menu option
             case R.id.action_sale:
                 saleCellPhone();
+                return true;
+            // Respond to a click on the "Order 100 pack" menu option
+            case R.id.action_order:
+                orderCellphonePack();
+                return true;
+            // Respond to a click on the "Receive 100 pack" menu option
+            case R.id.action_receive:
+                shipmentReceived();
                 return true;
             // Respond to a click on the "Delete" menu option
             case R.id.action_delete:
@@ -351,7 +396,7 @@ public class EditorActivity extends AppCompatActivity
             case android.R.id.home:
                 // If the cellphone hasn't changed, continue with navigating up to parent activity
                 // which is the {@link CatalogActivity}.
-                if (!mCellPhoneHasChanged && !mSaleHasChanged) {
+                if (!mCellPhoneHasChanged && !mQuantityHasChanged) {
                     NavUtils.navigateUpFromSameTask(EditorActivity.this);
                     return true;
                 }
@@ -587,7 +632,7 @@ public class EditorActivity extends AppCompatActivity
     @Override
     public void onBackPressed() {
         // If the cellphone hasn't changed, continue with handling back button press
-        if (!mCellPhoneHasChanged && !mSaleHasChanged) {
+        if (!mCellPhoneHasChanged && !mQuantityHasChanged) {
             super.onBackPressed();
             return;
         }
