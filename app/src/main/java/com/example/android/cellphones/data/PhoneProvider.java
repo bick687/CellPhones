@@ -217,10 +217,10 @@ public class PhoneProvider extends ContentProvider{
             }
         }
 
-        //Check if the gender already exist or the gender is valid
+        //Check if the price is less than zero(negative).
         if (values.containsKey(PhoneEntry.COLUMN_PHONE_PRICE)){
             Integer price = values.getAsInteger(PhoneEntry.COLUMN_PHONE_PRICE);
-            if (price != null && price <= 0){
+            if (price != null && price < 0){
                 throw new IllegalArgumentException("Cellphone requires price");
             }
         }
@@ -228,7 +228,7 @@ public class PhoneProvider extends ContentProvider{
         //Check if the quantity already exist or if its valid
         if (values.containsKey(PhoneEntry.COLUMN_PHONE_QUANTITY)){
             Integer quantity = values.getAsInteger(PhoneEntry.COLUMN_PHONE_PRICE);
-            if (quantity != null && quantity <= 0){
+            if (quantity != null && quantity < 0){
                 throw new IllegalArgumentException("Cellphone requires valid quantity");
             }
         }

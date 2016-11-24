@@ -23,7 +23,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -62,13 +61,18 @@ public class EditorActivity extends AppCompatActivity
      */
     private Uri mCurrentPhoneUri;
 
+    // Initialize boolean to check for any changes to cellphone specs
     private boolean mCellPhoneHasChanged = false;
 
+    // ImageView for the cellphone image
     private ImageView mCellphoneImageView;
 
-    String imageDecodableString;
+    // Link to the cellphone image to be stored in the database
+    String mImageLink;
 
+    // Add image button
     private Button mAddImageButton;
+
     // Set up an onTouchListener
     private View.OnTouchListener mTouchListener = new View.OnTouchListener() {
         @Override
@@ -90,17 +94,8 @@ public class EditorActivity extends AppCompatActivity
         mAddImageButton = (Button) findViewById(R.id.image_upload_button);
         mCellphoneImageView = (ImageView) findViewById(R.id.cellphone_image);
 
-        ViewTreeObserver viewTreeObserver = mCellphoneImageView.getViewTreeObserver();
-        viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
 
-            @Override
-            public void onGlobalLayout() {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                    mCellphoneImageView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                }
-                mCellphoneImageView.setImageBitmap(getBitmapFromUri(mCurrentPhoneUri));
-            }
-        });
+        //mCellphoneImageView.setImageBitmap(getBitmapFromUri(mCurrentPhoneUri));
 
         // Examine the intent that was used to launch this activity
         // In order to figure out if new cellphone needs to created or edit an existing one.
@@ -174,6 +169,7 @@ public class EditorActivity extends AppCompatActivity
         String nameString = mNameEditText.getText().toString().trim();
         String quantityString = mQuantityEditText.getText().toString().trim();
         String priceString = mPriceEditText.getText().toString().trim();
+        String imageString = mImageLink;
 
         // If no cellphone was added, return to previous activity without saving
         // any data
@@ -190,7 +186,7 @@ public class EditorActivity extends AppCompatActivity
         values.put(PhoneEntry.COLUMN_PHONE_NAME, nameString);
         values.put(PhoneEntry.COLUMN_PHONE_QUANTITY, quantityString);
         values.put(PhoneEntry.COLUMN_PHONE_PRICE, priceString);
-        values.put(PhoneEntry.COLUMN_PHONE_IMAGE, imageDecodableString);
+        values.put(PhoneEntry.COLUMN_PHONE_IMAGE, imageString);
 
         if (mCurrentPhoneUri == null) {
             // Insert a new phone into the provider, returning the content URI for the new cellphone
@@ -371,7 +367,7 @@ public class EditorActivity extends AppCompatActivity
             mNameEditText.setText(name);
             mQuantityEditText.setText(Integer.toString(quantity));
             mPriceEditText.setText(Double.toString(price));
-            mCellphoneImageView.setImageBitmap(BitmapFactory.decodeFile(image));
+            mCellphoneImageView.setImageURI(Uri.parse(image));
         }
 
     }
@@ -406,8 +402,7 @@ public class EditorActivity extends AppCompatActivity
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
         super.onActivityResult(requestCode, resultCode, resultData);
-        try {
-            // The ACTION_OPEN_DOCUMENT intent was sent with the request code READ_REQUEST_CODE.
+             // The ACTION_OPEN_DOCUMENT intent was sent with the request code READ_REQUEST_CODE.
             // If the request code seen here doesn't match, it's the response to some other intent,
             // and the below code shouldn't run at all.
 
@@ -417,32 +412,21 @@ public class EditorActivity extends AppCompatActivity
                 // provided to this method as a parameter.  Pull that uri using "resultData.getData()"
 
                 Uri selectedImage = resultData.getData();
-                String[] filePathColumn = {
-                        MediaStore.Images.Media.DATA};
+                mImageLink = selectedImage.toString();
 
-                //Get the cursor
-                Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
-                // Move to first row
-                cursor.moveToFirst();
+                try {
+                    MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
+                    // Find the ImageView
+                    ImageView imageView = (ImageView) findViewById(R.id.cellphone_image);
+                    // Set the image in the imageView after decoding the String
+                    imageView.setImageBitmap(getBitmapFromUri(selectedImage));
 
-                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                imageDecodableString = cursor.getString(columnIndex);
-                cursor.close();
-
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
-                // Find the ImageView
-                ImageView imageView = (ImageView) findViewById(R.id.cellphone_image);
-                // Set the image in the imageView after decoding the String
-                imageView.setImageBitmap(getBitmapFromUri(selectedImage));
-
-            } else {
-                Toast.makeText(this, "Pick an image", Toast.LENGTH_SHORT).show();
+                } catch (IOException e) {
+                    Toast.makeText(this, "Something went wrong", Toast.LENGTH_LONG)
+                            .show();
+                }
             }
-        } catch (Exception e) {
-            Toast.makeText(this, "Something went wrong", Toast.LENGTH_LONG)
-                    .show();
         }
-    }
 
 
     public Bitmap getBitmapFromUri(Uri uri) {
