@@ -102,6 +102,7 @@ public class EditorActivity extends AppCompatActivity
         Intent intent = getIntent();
         mCurrentPhoneUri = intent.getData();
 
+        // Load cursor and get image link only when editing a cellphone
         if (mCurrentPhoneUri != null) {
             Cursor c = getContentResolver().query(mCurrentPhoneUri, null, null, null, null);
             if (c.moveToNext()) {
@@ -189,6 +190,7 @@ public class EditorActivity extends AppCompatActivity
 
     private void saveCellPhone() {
 
+        // If there are no changes detected, return to previous activity without saving.
         if (!mCellPhoneHasChanged) {
             return;
         }
@@ -196,8 +198,6 @@ public class EditorActivity extends AppCompatActivity
         String nameString = mNameEditText.getText().toString().trim();
         String quantityString = mQuantityEditText.getText().toString().trim();
         String priceString = mPriceEditText.getText().toString().trim();
-
-
         String imageString = mImageLink;
 
         // If no cellphone was added, return to previous activity without saving
@@ -398,13 +398,14 @@ public class EditorActivity extends AppCompatActivity
             mQuantityEditText.setText(Integer.toString(quantity));
             mPriceEditText.setText(Double.toString(price));
 
+            // If there's no image uploaded, do not try to parse the image link. Set the ImageView
+            // null.
             if (image == null){
                 mCellphoneImageView.setImageURI(null);
             } else {
                 mCellphoneImageView.setImageURI(Uri.parse(image));
             }
         }
-
     }
 
     @Override
@@ -447,6 +448,7 @@ public class EditorActivity extends AppCompatActivity
                 // Instead, a URI to that document will be contained in the return intent
                 // provided to this method as a parameter.  Pull that uri using "resultData.getData()"
 
+                // URI for the image to be uploaded. Convert the link to a string
                 Uri selectedImage = resultData.getData();
                 mImageLink = selectedImage.toString();
 
