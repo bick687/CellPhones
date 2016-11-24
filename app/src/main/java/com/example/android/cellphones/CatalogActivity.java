@@ -69,10 +69,6 @@ public class CatalogActivity extends AppCompatActivity implements
 
                                                    // Set the URI on the data field of the intent
                                                    intent.setData(currentCellphoneUri);
-
-                                                   // Launch the {@link EditorActivity} to display
-                                                   // the data for the current cellphone.
-                                                   intent.putExtra("id", id);
                                                    startActivity(intent);
                                                }
                                            }

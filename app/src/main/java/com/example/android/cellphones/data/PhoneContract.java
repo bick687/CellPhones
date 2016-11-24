@@ -42,6 +42,5 @@ public class PhoneContract {
         public static final String COLUMN_PHONE_NAME = "name";
         public static final String COLUMN_PHONE_PRICE = "price";
         public static final String COLUMN_PHONE_QUANTITY = "quantity";
-
     }
 }
