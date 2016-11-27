@@ -15,13 +15,7 @@ import com.example.android.cellphones.data.PhoneContract.PhoneEntry;
  * Created by jitso on 10/27/2016.
  */
 
-public class PhoneProvider extends ContentProvider{
-
-    /** URI matcher code for the content URI for the cellphones table */
-    private static final int CELLPHONES = 100;
-
-    /** URI matcher code for the content URI for a single phone in the cellphones table */
-    private static final int CELLPHONE_ID = 101;
+public class PhoneProvider extends ContentProvider {
 
     /**
      * UriMatcher object to match a content URI to a corresponding code.
@@ -29,6 +23,18 @@ public class PhoneProvider extends ContentProvider{
      * It's common to use NO_MATCH as the input for this case.
      */
     public static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+    /**
+     * Tag for the log messages
+     */
+    public static final String LOG_TAG = PhoneProvider.class.getSimpleName();
+    /**
+     * URI matcher code for the content URI for the cellphones table
+     */
+    private static final int CELLPHONES = 100;
+    /**
+     * URI matcher code for the content URI for a single phone in the cellphones table
+     */
+    private static final int CELLPHONE_ID = 101;
 
     // Static initializer. This is run the first time anything is called from this class.
     static {
@@ -48,10 +54,9 @@ public class PhoneProvider extends ContentProvider{
                 CELLPHONE_ID);
     }
 
-    /** Tag for the log messages */
-    public static final String LOG_TAG = PhoneProvider.class.getSimpleName();
-
-    /** Database helper*/
+    /**
+     * Database helper
+     */
     private PhoneDbHelper mDbHelper;
 
     @Override
@@ -100,7 +105,7 @@ public class PhoneProvider extends ContentProvider{
                 // arguments that will fill in the "?". Since we have 1 question mark in the
                 // selection, we have 1 String in the selection arguments' String array.
                 selection = PhoneEntry._ID + "=?";
-                selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
 
                 // This will perform a query on the cellphones table where the _id equals
                 // 3 to return a Cursor containing that row of the table.
@@ -116,7 +121,6 @@ public class PhoneProvider extends ContentProvider{
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
 
         // Return the cursor
-
         return cursor;
     }
 
@@ -159,6 +163,12 @@ public class PhoneProvider extends ContentProvider{
             throw new IllegalArgumentException("Cellphone requires valid quantity");
         }
 
+        // Check that the image is not null
+        String image = values.getAsString(PhoneEntry.COLUMN_PHONE_IMAGE);
+        if (image == null) {
+            throw new IllegalArgumentException("Cellphone requires an image");
+        }
+
         // Insert a new cellphone into the cellphones database table with the given ContentValues
         // To access our database, we instantiate our subclass of SQLiteOpenHelper
         // and pass the context, which is the current activity.
@@ -194,7 +204,7 @@ public class PhoneProvider extends ContentProvider{
                 // so we know which row to update. Selection will be "_id=?" and selection
                 // arguments will be a String array containing the actual ID.
                 selection = PhoneEntry._ID + "=?";
-                selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
                 return updateCellPhone(uri, contentValues, selection, selectionArgs);
             default:
                 throw new IllegalArgumentException("Update is not supported for " + uri);
@@ -210,31 +220,31 @@ public class PhoneProvider extends ContentProvider{
 
         // Update the selected phones in the cellphones database table with the given ContentValues
         //Check if name already exist in the database or name is not null
-        if(values.containsKey(PhoneEntry.COLUMN_PHONE_NAME)){
+        if (values.containsKey(PhoneEntry.COLUMN_PHONE_NAME)) {
             String name = values.getAsString(PhoneEntry.COLUMN_PHONE_NAME);
-            if(name == null){
+            if (name == null) {
                 throw new IllegalArgumentException("Cellphone requires a name");
             }
         }
 
         //Check if the price is less than zero(negative).
-        if (values.containsKey(PhoneEntry.COLUMN_PHONE_PRICE)){
+        if (values.containsKey(PhoneEntry.COLUMN_PHONE_PRICE)) {
             Integer price = values.getAsInteger(PhoneEntry.COLUMN_PHONE_PRICE);
-            if (price != null && price < 0){
-                throw new IllegalArgumentException("Cellphone requires price");
+            if (price != null && price <= 0) {
+                throw new IllegalArgumentException("Cellphone requires valid price");
             }
         }
 
         //Check if the quantity already exist or if its valid
-        if (values.containsKey(PhoneEntry.COLUMN_PHONE_QUANTITY)){
+        if (values.containsKey(PhoneEntry.COLUMN_PHONE_QUANTITY)) {
             Integer quantity = values.getAsInteger(PhoneEntry.COLUMN_PHONE_PRICE);
-            if (quantity != null && quantity < 0){
+            if (quantity != null && quantity < 0) {
                 throw new IllegalArgumentException("Cellphone requires valid quantity");
             }
         }
 
         //If there are no values to update, then do not try to update the database
-        if (values.size() == 0){
+        if (values.size() == 0) {
             return 0;
         }
 

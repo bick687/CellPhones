@@ -9,19 +9,28 @@ import android.provider.BaseColumns;
  */
 
 public class PhoneContract {
-    /** Content Authority URI */
+    /**
+     * Content Authority URI
+     */
     public static final String CONTENT_AUTHORITY = "com.example.android.cellphones";
 
-    /** Concatenate URI scheme */
+    /**
+     * Concatenate URI scheme
+     */
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
-    /** Name of the table in the database */
+    /**
+     * Name of the table in the database
+     */
     public static final String PATH_PHONES = "cellphones";
 
-    private PhoneContract(){}
+    private PhoneContract() {
+    }
 
-    public static final class PhoneEntry implements BaseColumns{
-        /** Complete content URI with the table name "cellphones" */
+    public static final class PhoneEntry implements BaseColumns {
+        /**
+         * Complete content URI with the table name "cellphones"
+         */
         public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_PHONES);
 
         /**
@@ -33,10 +42,14 @@ public class PhoneContract {
         public static final String CONTENT_ITEM_TYPE =
                 ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_PHONES;
 
-        /** Create the table "cellphones" */
+        /**
+         * Create the table "cellphones"
+         */
         public static final String TABLE_NAME = "cellphones";
 
-        /** Create the columns(ID, image, name, price quantity) for the table "cellphones" */
+        /**
+         * Create the columns(ID, image, name, price quantity) for the table "cellphones"
+         */
         public static final String _ID = BaseColumns._ID;
         public static final String COLUMN_PHONE_IMAGE = "image";
         public static final String COLUMN_PHONE_NAME = "name";

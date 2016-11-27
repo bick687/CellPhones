@@ -3,14 +3,16 @@ package com.example.android.cellphones.data;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+
 import com.example.android.cellphones.data.PhoneContract.PhoneEntry;
+
 /**
  * Created by jitso on 10/27/2016.
  */
 
 public class PhoneDbHelper extends SQLiteOpenHelper {
     //Tag for log messages
-    public static final  String LOG_TAG = PhoneDbHelper.class.getSimpleName();
+    public static final String LOG_TAG = PhoneDbHelper.class.getSimpleName();
 
     //Database version number. Increment the version if database schema change
     private static final int DATABASE_VERSION = 1;
@@ -18,7 +20,7 @@ public class PhoneDbHelper extends SQLiteOpenHelper {
     private static final String PHONES_DATABASE_NAME = "inventory.db";
 
     //Database constructor
-    public PhoneDbHelper(Context context){
+    public PhoneDbHelper(Context context) {
         super(context, PHONES_DATABASE_NAME, null, DATABASE_VERSION);
     }
 

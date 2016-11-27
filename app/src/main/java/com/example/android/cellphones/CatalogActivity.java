@@ -19,11 +19,11 @@ import com.example.android.cellphones.data.PhoneContract.PhoneEntry;
 public class CatalogActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor> {
 
-        //Initialize the Cursor Loader
-        private static final int URL_LOADER = 0;
+    //Initialize the Cursor Loader
+    private static final int URL_LOADER = 0;
 
-        //Initialize the Cursor Adapter
-        PhoneCursorAdapter mPhoneAdapter;
+    //Initialize the Cursor Adapter
+    PhoneCursorAdapter mPhoneAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,27 +51,27 @@ public class CatalogActivity extends AppCompatActivity implements
         cellphoneListView.setAdapter(mPhoneAdapter);
 
         // Set an onItemClickListener on the ListView
-        cellphoneListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
-                                               @Override
-                                               public void onItemClick(AdapterView<?> adapterView,
-                                                                       View view, int i, long id) {
-                                                   //Create a new intent to go to
-                                                   // {@link EditorActivity}
-                                                   Intent intent = new Intent(CatalogActivity.this,
-                                                           EditorActivity.class);
-                                                   // Form the content URI that represents the
-                                                   // specific cellphone that was clicked on, by
-                                                   // appending the "id" onto the
-                                                   // {@link PhoneEntry#CONTENT_URI}
-                                                   Uri currentCellphoneUri =
-                                                           ContentUris.withAppendedId(
-                                                           PhoneEntry.CONTENT_URI, id);
+        cellphoneListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                                     @Override
+                                                     public void onItemClick(AdapterView<?> adapterView,
+                                                                             View view, int i, long id) {
+                                                         //Create a new intent to go to
+                                                         // {@link EditorActivity}
+                                                         Intent intent = new Intent(CatalogActivity.this,
+                                                                 EditorActivity.class);
+                                                         // Form the content URI that represents the
+                                                         // specific cellphone that was clicked on, by
+                                                         // appending the "id" onto the
+                                                         // {@link PhoneEntry#CONTENT_URI}
+                                                         Uri currentCellphoneUri =
+                                                                 ContentUris.withAppendedId(
+                                                                         PhoneEntry.CONTENT_URI, id);
 
-                                                   // Set the URI on the data field of the intent
-                                                   intent.setData(currentCellphoneUri);
-                                                   startActivity(intent);
-                                               }
-                                           }
+                                                         // Set the URI on the data field of the intent
+                                                         intent.setData(currentCellphoneUri);
+                                                         startActivity(intent);
+                                                     }
+                                                 }
         );
 
         /*

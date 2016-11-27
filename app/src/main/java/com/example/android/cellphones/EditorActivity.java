@@ -42,8 +42,11 @@ public class EditorActivity extends AppCompatActivity
     //Initialize the Cursor Loader
     private static final int URL_LOADER = 0;
     private static final int PICK_IMAGE_REQUEST = 0;
-    private static final int SEND_MAIL_REQUEST = 1;
     private static final String STATE_URI = "STATE_URI";
+    // Add image button
+    public Button mAddImageButton;
+    // Link to the cellphone image to be stored in the database
+    String mImageLink;
     /**
      * EditText field to enter the cellphone's name
      */
@@ -60,19 +63,11 @@ public class EditorActivity extends AppCompatActivity
      * Content URI for the existing cellphone (null if it's a new cellphone)
      */
     private Uri mCurrentPhoneUri;
-
     // Initialize boolean to check for any changes to cellphone specs
     private boolean mCellPhoneHasChanged = false;
-
     // ImageView for the cellphone image
     private ImageView mCellphoneImageView;
-
-    // Link to the cellphone image to be stored in the database
-    String mImageLink;
-
-    // Add image button
-    private Button mAddImageButton;
-
+    // Initialize boolean to check for any changes to cellphone quantity.
     private boolean mQuantityHasChanged = false;
 
     // Set up an onTouchListener
@@ -97,8 +92,6 @@ public class EditorActivity extends AppCompatActivity
         mCellphoneImageView = (ImageView) findViewById(R.id.cellphone_image);
 
 
-        //mCellphoneImageView.setImageBitmap(getBitmapFromUri(mCurrentPhoneUri));
-
         // Examine the intent that was used to launch this activity
         // In order to figure out if new cellphone needs to created or edit an existing one.
         Intent intent = getIntent();
@@ -119,6 +112,7 @@ public class EditorActivity extends AppCompatActivity
             // Invalidate the options menu, so the "Delete" menu option can be hidden.
             // (It doesn't make sense to delete a cellphone that hasn't been created yet.)
             invalidateOptionsMenu();
+            //Set the cellphone ImageView gone.
         } else {
             // Otherwise this is an existing cellphone. Change the title to "Edit a Cellphone"
             setTitle(getString(R.string.edit_cellphone));
@@ -144,19 +138,19 @@ public class EditorActivity extends AppCompatActivity
         String price = mPriceEditText.getText().toString();
 
         if (name.length() == 0) {
-            Toast.makeText(this, "Please enter cellphone name", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Update or Save Failed. \nCellphone name required.", Toast.LENGTH_SHORT).show();
             mNameEditText.setError("Please enter cellphone name");
             return;
-        } else if (quantity.length() == 0) {
-            Toast.makeText(this, "Please enter quantity", Toast.LENGTH_SHORT).show();
+        } else if (quantity.length() < 0) {
+            Toast.makeText(this, "Update or Save Failed. \nQuantity cannot be negative.", Toast.LENGTH_SHORT).show();
             mQuantityEditText.setError("No quantity added");
             return;
         } else if (price.length() == 0) {
-            Toast.makeText(this, "Please enter price", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Update or Save Failed. \nPrice cannot be zero.", Toast.LENGTH_SHORT).show();
             mPriceEditText.setError("No price added");
             return;
-        } else if (mCellphoneImageView.getViewTreeObserver().toString().length() == 0) {
-            Toast.makeText(this, "Please upload image", Toast.LENGTH_SHORT).show();
+        } else if (mImageLink == null) {
+            Toast.makeText(this, "Update or Save Failed. \nCellphone image required.", Toast.LENGTH_SHORT).show();
             return;
         } else {
             saveCellPhone();
@@ -243,6 +237,7 @@ public class EditorActivity extends AppCompatActivity
         String nameString = mNameEditText.getText().toString().trim();
         String quantityString = mQuantityEditText.getText().toString().trim();
         String priceString = mPriceEditText.getText().toString().trim();
+        Double priceDouble = Double.parseDouble(String.format(mPriceEditText.getText().toString(), 2));
         String imageString = mImageLink;
 
         // If no cellphone was added, return to previous activity without saving
@@ -260,7 +255,7 @@ public class EditorActivity extends AppCompatActivity
         ContentValues values = new ContentValues();
         values.put(PhoneEntry.COLUMN_PHONE_NAME, nameString);
         values.put(PhoneEntry.COLUMN_PHONE_QUANTITY, quantityString);
-        values.put(PhoneEntry.COLUMN_PHONE_PRICE, priceString);
+        values.put(PhoneEntry.COLUMN_PHONE_PRICE, priceDouble);
         values.put(PhoneEntry.COLUMN_PHONE_IMAGE, imageString);
 
         if (mCurrentPhoneUri == null) {
@@ -463,18 +458,20 @@ public class EditorActivity extends AppCompatActivity
             // Extract out the value from the Cursor for the given column index
             String name = cursor.getString(nameColumnIndex);
             int quantity = cursor.getInt(quantityColumnIndex);
-            double price = cursor.getInt(priceColumnIndex);
+            double price = cursor.getDouble(priceColumnIndex);
             String image = cursor.getString(imageColumnIndex);
 
             // Update the views on the screen with the values from the database
             mNameEditText.setText(name);
             mQuantityEditText.setText(Integer.toString(quantity));
-            mPriceEditText.setText(Double.toString(price));
+            mPriceEditText.setText(String.format("%.2f", price));
 
             // If there's no image uploaded, do not try to parse the image link. Set the ImageView
             // null.
             if (image == null) {
                 mCellphoneImageView.setImageURI(null);
+                mCellphoneImageView.setVisibility(View.GONE);
+
             } else {
                 mCellphoneImageView.setImageURI(Uri.parse(image));
             }
@@ -487,6 +484,7 @@ public class EditorActivity extends AppCompatActivity
         mNameEditText.setText("");
         mQuantityEditText.setText("");
         mPriceEditText.setText("");
+        mCellphoneImageView.setImageURI(null);
 
     }
 
@@ -530,6 +528,7 @@ public class EditorActivity extends AppCompatActivity
                 // Find the ImageView
                 ImageView imageView = (ImageView) findViewById(R.id.cellphone_image);
                 // Set the image in the imageView after decoding the String
+                imageView.setVisibility(View.VISIBLE);
                 imageView.setImageBitmap(getBitmapFromUri(selectedImage));
 
             } catch (IOException e) {
@@ -539,7 +538,7 @@ public class EditorActivity extends AppCompatActivity
         }
     }
 
-
+    // Convert image to bitmap and scale down the image to fit the ImageView
     public Bitmap getBitmapFromUri(Uri uri) {
         if (uri == null || uri.toString().isEmpty())
             return null;

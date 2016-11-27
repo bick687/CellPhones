@@ -10,6 +10,8 @@ import android.widget.TextView;
 
 import com.example.android.cellphones.data.PhoneContract.PhoneEntry;
 
+import static com.example.android.cellphones.R.id.quantity;
+
 /**
  * Created by jitso on 10/27/2016.
  */
@@ -57,21 +59,22 @@ public class PhoneCursorAdapter extends CursorAdapter {
         // Fill out this method
         //Find views to inflate the list
         TextView nameTextView = (TextView) view.findViewById(R.id.name);
+        TextView quantityTextView = (TextView) view.findViewById(quantity);
         TextView priceTextView = (TextView) view.findViewById(R.id.price);
-        TextView quantityTextView = (TextView) view.findViewById(R.id.quantity);
+
         //Find the column attributes
         int nameColumnIndex = cursor.getColumnIndex(PhoneEntry.COLUMN_PHONE_NAME);
-        int priceColumnIndex = cursor.getColumnIndex(PhoneEntry.COLUMN_PHONE_PRICE);
         int quantityColumnIndex = cursor.getColumnIndex(PhoneEntry.COLUMN_PHONE_QUANTITY);
+        int priceColumnIndex = cursor.getColumnIndex(PhoneEntry.COLUMN_PHONE_PRICE);
 
         //Extract properties from the cursor
         String name = cursor.getString(nameColumnIndex);
-        String price = cursor.getString(priceColumnIndex);
-        String quantity = cursor.getString(quantityColumnIndex);
+        int quantity = cursor.getInt(quantityColumnIndex);
+        Double prices = cursor.getDouble(priceColumnIndex);
 
         //Populate the list with extracted name and summary
         nameTextView.setText(name);
-        priceTextView.setText(price);
-        quantityTextView.setText(quantity);
+        quantityTextView.setText("Quantity: " + quantity);
+        priceTextView.setText("Price: $" + String.format("%.2f", prices));
     }
 }

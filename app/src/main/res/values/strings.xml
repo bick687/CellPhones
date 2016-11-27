@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Cell Phones</string>
     <string name="empty_text_title">There are no cellphones</string>
-    <string name="subtitle_empty_text">Zero Cellphone found</string>
+    <string name="subtitle_empty_text">Click on bottom right button to add a Cellphone.</string>
     <string name="cellphone_specs">Cellphone specs</string>
     <string name="edit_cellphone_name">Edit Cellphone Name</string>
     <string name="specs">Specs</string>
@@ -24,4 +24,6 @@
     <string name="keep_editing_msg">Keep editing</string>
     <string name="price">Price</string>
     <string name="cellphone_name">Cellphone Name</string>
+    <string name="quantity">Quantity</string>
+    <string name="add_image">Add image</string>
 </resources>
