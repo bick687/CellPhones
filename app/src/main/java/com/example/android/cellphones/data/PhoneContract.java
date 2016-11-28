@@ -24,6 +24,7 @@ public class PhoneContract {
      */
     public static final String PATH_PHONES = "cellphones";
 
+    //An empty private constructor makes sure that the class is not going to be initialised.
     private PhoneContract() {
     }
 
@@ -50,10 +51,10 @@ public class PhoneContract {
         /**
          * Create the columns(ID, image, name, price quantity) for the table "cellphones"
          */
-        public static final String _ID = BaseColumns._ID;
-        public static final String COLUMN_PHONE_IMAGE = "image";
         public static final String COLUMN_PHONE_NAME = "name";
         public static final String COLUMN_PHONE_PRICE = "price";
         public static final String COLUMN_PHONE_QUANTITY = "quantity";
+        public static final String COLUMN_PHONE_IMAGE = "image";
+        public static final String COLUMN_PHONE_SALES = "sales";
     }
 }

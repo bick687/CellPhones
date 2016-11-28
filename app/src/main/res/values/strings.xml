@@ -26,4 +26,7 @@
     <string name="cellphone_name">Cellphone Name</string>
     <string name="quantity">Quantity</string>
     <string name="add_image">Add image</string>
+    <string name="enter_price">Enter price</string>
+    <string name="zero_sales">0</string>
+    <string name="sale_button">Sale</string>
 </resources>

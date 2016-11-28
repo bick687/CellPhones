@@ -212,11 +212,14 @@ public class PhoneProvider extends ContentProvider {
     }
 
     /**
-     * Update cellphones in the database with the given content values. Apply the changes to the rows
-     * specified in the selection and selection arguments (which could be 0 or 1 or more cellphones).
+     * Update cellphones in the database with the given content values. Apply the changes
+     * to the rows
+     * specified in the selection and selection arguments (which could be 0 or 1 or more
+     * cellphones).
      * Return the number of rows that were successfully updated.
      */
-    private int updateCellPhone(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+    private int updateCellPhone(Uri uri, ContentValues values, String selection, String[]
+            selectionArgs) {
 
         // Update the selected phones in the cellphones database table with the given ContentValues
         //Check if name already exist in the database or name is not null

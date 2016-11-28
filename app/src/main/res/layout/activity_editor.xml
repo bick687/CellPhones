@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:fillViewport="true"
     android:scrollbars="vertical"
     tools:context=".EditorActivity">
@@ -82,7 +82,7 @@
                 <EditText
                     android:id="@+id/edit_cell_price"
                     style="@style/EditorFieldStyle"
-                    android:hint="Enter price"
+                    android:hint="@string/enter_price"
                     android:inputType="numberDecimal" />
 
                 <!-- Units for price ($) -->
@@ -93,18 +93,36 @@
             </RelativeLayout>
         </LinearLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                style="@style/CategoryStyle"
+                android:text="Sales" />
+
+            <TextView
+                android:id="@+id/cellphone_sales"
+                style="@style/EditorFieldStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="0" />
+        </LinearLayout>
+
         <Button
             android:id="@+id/image_upload_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:onClick="UploadImage"
+            android:onClick="uploadImage"
             android:text="@string/add_image" />
 
         <ImageView
             android:id="@+id/cellphone_image"
-            android:layout_gravity="center_horizontal"
             android:layout_width="250dp"
-            android:layout_height="250dp" />
+            android:layout_height="250dp"
+            android:layout_gravity="center_horizontal" />
     </LinearLayout>
 </ScrollView>

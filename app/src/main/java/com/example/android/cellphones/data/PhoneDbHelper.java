@@ -18,6 +18,14 @@ public class PhoneDbHelper extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 1;
     //Name for the database file
     private static final String PHONES_DATABASE_NAME = "inventory.db";
+    // Create a String that contains the SQL statement to create the cellphones table
+    private static final String SQL_PHONES_TABLE = "CREATE TABLE " + PhoneEntry.TABLE_NAME + " ("
+            + PhoneEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + PhoneEntry.COLUMN_PHONE_NAME + " TEXT NOT NULL, "
+            + PhoneEntry.COLUMN_PHONE_PRICE + " REAL NOT NULL, "
+            + PhoneEntry.COLUMN_PHONE_QUANTITY + " INTEGER NOT NULL DEFAULT 0, "
+            + PhoneEntry.COLUMN_PHONE_IMAGE + " TEXT NOT NULL, "
+            + PhoneEntry.COLUMN_PHONE_SALES + " TEXT NOT NULL DEFAULT 0);";
 
     //Database constructor
     public PhoneDbHelper(Context context) {
@@ -27,13 +35,6 @@ public class PhoneDbHelper extends SQLiteOpenHelper {
     //Create the database entries using the OnCreate method
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // Create a String that contains the SQL statement to create the cellphones table
-        String SQL_PHONES_TABLE = "CREATE TABLE " + PhoneEntry.TABLE_NAME + " ("
-                + PhoneEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + PhoneEntry.COLUMN_PHONE_IMAGE + " TEXT, "
-                + PhoneEntry.COLUMN_PHONE_NAME + " TEXT NOT NULL, "
-                + PhoneEntry.COLUMN_PHONE_PRICE + " REAL NOT NULL, "
-                + PhoneEntry.COLUMN_PHONE_QUANTITY + " INTEGER NOT NULL DEFAULT 0);";
         db.execSQL(SQL_PHONES_TABLE);
     }
 
@@ -43,7 +44,7 @@ public class PhoneDbHelper extends SQLiteOpenHelper {
         // to simply to discard the data and start over
         db.execSQL("DROP TABLE IF EXISTS " + PhoneEntry.TABLE_NAME);
 
-        // create new table
-        onCreate(db);
+        // Update table
+        db.execSQL(SQL_PHONES_TABLE);
     }
 }

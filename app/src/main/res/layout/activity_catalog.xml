@@ -56,5 +56,6 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_margin="@dimen/fab_margin"
+        android:onClick="onClickAddPhone"
         android:src="@drawable/addcolumn" />
 </RelativeLayout>
