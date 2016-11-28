@@ -4,6 +4,7 @@
 
     <application
         android:allowBackup="true"
+        android:hardwareAccelerated="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
@@ -15,17 +16,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".EditorActivity"
-            android:parentActivityName=".CatalogActivity" >
+        <activity
+            android:name=".EditorActivity"
+            android:configChanges="orientation|screenSize"
+            android:parentActivityName=".CatalogActivity">
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".CatalogActivity" />
         </activity>
+
         <provider
-            android:authorities="com.example.android.cellphones"
             android:name=".data.PhoneProvider"
-            android:exported="false"/>
+            android:authorities="com.example.android.cellphones"
+            android:exported="false" />
     </application>
 
 </manifest>

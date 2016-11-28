@@ -23,10 +23,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.android.cellphones.data.PhoneContract.PhoneEntry;
@@ -43,9 +43,17 @@ public class EditorActivity extends AppCompatActivity
     //Initialize the Cursor Loader
     private static final int URL_LOADER = 0;
     private static final int PICK_IMAGE_REQUEST = 0;
-    private static final int SEND_MAIL_REQUEST = 1;
     private static final String STATE_URI = "STATE_URI";
+<<<<<<< HEAD
     /**     * EditText field to enter the cellphone's name
+=======
+    // Add image button
+    public Button mAddImageButton;
+    // Link to the cellphone image to be stored in the database
+    String mImageLink;
+    /**
+     * EditText field to enter the cellphone's name
+>>>>>>> refs/remotes/origin/Cellphonesbeta
      */
     private EditText mNameEditText;
     /**
@@ -57,17 +65,20 @@ public class EditorActivity extends AppCompatActivity
      */
     private EditText mPriceEditText;
     /**
+     * TextView field to show cellphone sales
+     */
+    private TextView mSalesTextView;
+    /**
      * Content URI for the existing cellphone (null if it's a new cellphone)
      */
     private Uri mCurrentPhoneUri;
-
+    // Initialize boolean to check for any changes to cellphone specs
     private boolean mCellPhoneHasChanged = false;
-
+    // ImageView for the cellphone image
     private ImageView mCellphoneImageView;
+    // Initialize boolean to check for any changes to cellphone quantity.
+    private boolean mQuantityHasChanged = false;
 
-    String imageDecodableString;
-
-    private Button mAddImageButton;
     // Set up an onTouchListener
     private View.OnTouchListener mTouchListener = new View.OnTouchListener() {
         @Override
@@ -88,24 +99,22 @@ public class EditorActivity extends AppCompatActivity
         mPriceEditText = (EditText) findViewById(R.id.edit_cell_price);
         mAddImageButton = (Button) findViewById(R.id.image_upload_button);
         mCellphoneImageView = (ImageView) findViewById(R.id.cellphone_image);
+        mSalesTextView = (TextView) findViewById(R.id.cellphone_sales);
 
-        ViewTreeObserver viewTreeObserver = mCellphoneImageView.getViewTreeObserver();
-        viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-
-            @Override
-            public void onGlobalLayout() {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                    mCellphoneImageView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                }
-                mCellphoneImageView.setImageBitmap(getBitmapFromUri(mCurrentPhoneUri));
-            }
-        });
 
         // Examine the intent that was used to launch this activity
         // In order to figure out if new cellphone needs to created or edit an existing one.
         Intent intent = getIntent();
         mCurrentPhoneUri = intent.getData();
 
+        // Load cursor and get image link only when editing a cellphone
+        if (mCurrentPhoneUri != null) {
+            Cursor c = getContentResolver().query(mCurrentPhoneUri, null, null, null, null);
+            if (c.moveToNext()) {
+                mImageLink = c.getString(c.getColumnIndexOrThrow(PhoneEntry.COLUMN_PHONE_IMAGE));
+                c.close();
+            }
+        }
         // If the Intent does not contain a cellphone content URI, then we know that we are
         // creating a new cellphone.
         if (mCurrentPhoneUri == null) {
@@ -130,7 +139,6 @@ public class EditorActivity extends AppCompatActivity
         mPriceEditText.setOnTouchListener(mTouchListener);
         mQuantityEditText.setOnTouchListener(mTouchListener);
         mAddImageButton.setOnTouchListener(mTouchListener);
-
     }
 
     // Check if user entered the information correctly
@@ -140,19 +148,23 @@ public class EditorActivity extends AppCompatActivity
         String price = mPriceEditText.getText().toString();
 
         if (name.length() == 0) {
-            Toast.makeText(this, "Please enter cellphone name", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Update or Save Failed. \nCellphone name required.",
+                    Toast.LENGTH_SHORT).show();
             mNameEditText.setError("Please enter cellphone name");
             return;
-        } else if (quantity.length() == 0) {
-            Toast.makeText(this, "Please enter quantity", Toast.LENGTH_SHORT).show();
+        } else if (quantity.length() < 0) {
+            Toast.makeText(this, "Update or Save Failed. \nQuantity cannot be negative.",
+                    Toast.LENGTH_SHORT).show();
             mQuantityEditText.setError("No quantity added");
             return;
         } else if (price.length() == 0) {
-            Toast.makeText(this, "Please enter price", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Update or Save Failed. \nPrice cannot be zero.",
+                    Toast.LENGTH_SHORT).show();
             mPriceEditText.setError("No price added");
             return;
-        } else if (mAddImageButton.getText().toString().length() == 0) {
-            Toast.makeText(this, "Please upload image", Toast.LENGTH_SHORT).show();
+        } else if (mImageLink == null) {
+            Toast.makeText(this, "Update or Save Failed. \nCellphone image required.",
+                    Toast.LENGTH_SHORT).show();
             return;
         } else {
             saveCellPhone();
@@ -165,21 +177,110 @@ public class EditorActivity extends AppCompatActivity
         // Inflate the menu options from the res/menu/menu_editor.xml file.
         // This adds menu items to the app bar.
         getMenuInflater().inflate(R.menu.menu_editor, menu);
+
+        MenuItem saleItem = menu.findItem(R.id.action_sale);
+        saleItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                mQuantityHasChanged = true;
+                return false;
+            }
+        });
+
+        MenuItem receivedItem = menu.findItem(R.id.action_receive);
+        receivedItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                mQuantityHasChanged = true;
+                return false;
+            }
+        });
         return true;
     }
 
+    // Create method for sale of a cellphone. Update the quantity field with the new quantity
+    private void saleCellPhone() {
+        String quantityString = mQuantityEditText.getText().toString().trim();
+        // Check if the field is empty. If empty return.
+        if (quantityString.matches("")) {
+            Toast.makeText(this, "Quantity field is empty.", Toast.LENGTH_SHORT).show();
+        } else {
+            int quantityInteger = Integer.parseInt(quantityString);
+
+            if (quantityInteger == 0) {
+                Toast.makeText(this, "There are no more items to sell.", Toast.LENGTH_SHORT).show();
+            } else {
+                // Update the quantity if the cellphone sale is successful.
+                int updatedQuantity = quantityInteger - 1;
+                ContentValues values = new ContentValues();
+                values.put(PhoneEntry.COLUMN_PHONE_QUANTITY, updatedQuantity);
+                mQuantityEditText.setText(Integer.toString(updatedQuantity));
+
+                // Update the sale if the cellphone sale is successful.
+                String salesString = mSalesTextView.getText().toString().trim();
+                int salesInteger = Integer.parseInt(salesString);
+                int updatedSales = salesInteger + 1;
+                values.put(PhoneEntry.COLUMN_PHONE_SALES, updatedSales);
+                mSalesTextView.setText(Integer.toString(updatedSales));
+
+                if (mCurrentPhoneUri != null) {
+                    getContentResolver().update(mCurrentPhoneUri, values, null, null);
+                    getContentResolver().notifyChange(PhoneEntry.CONTENT_URI, null);
+                }
+            }
+        }
+    }
+
+    // Create method to update the quantity when shipment is received.
+    private void shipmentReceived() {
+        String quantityString = mQuantityEditText.getText().toString().trim();
+        int quantityInteger = Integer.parseInt(quantityString);
+        int updatedQuantity = quantityInteger + 100;
+        ContentValues values = new ContentValues();
+        values.put(PhoneEntry.COLUMN_PHONE_QUANTITY, updatedQuantity);
+        mQuantityEditText.setText(Integer.toString(updatedQuantity));
+    }
+
     private void saveCellPhone() {
+        if (mCurrentPhoneUri != null && mQuantityHasChanged) {
+            String quantityString = mQuantityEditText.getText().toString().trim();
+            ContentValues values = new ContentValues();
+            values.put(PhoneEntry.COLUMN_PHONE_QUANTITY, quantityString);
+            int rowsAffected = getContentResolver().update(mCurrentPhoneUri, values, null, null);
+            Toast.makeText(this, "Cellphone sale successful.", Toast.LENGTH_SHORT).show();
+
+            // Show a toast message depending on whether or not the update was successful.
+            if (rowsAffected == 0) {
+                // If no rows were affected, then there was an error with the update.
+                Toast.makeText(this, R.string.cellphone_update_failed,
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                // Otherwise, the update was successful and we can display a toast.
+                Toast.makeText(this, R.string.cellphone_update_successful,
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        // If there are no changes detected, return to previous activity without saving.
+        if (!mCellPhoneHasChanged) {
+            return;
+        }
         // Get the user inputs and store them as strings
         String nameString = mNameEditText.getText().toString().trim();
         String quantityString = mQuantityEditText.getText().toString().trim();
         String priceString = mPriceEditText.getText().toString().trim();
+        Double priceDouble =
+                Double.parseDouble(String.format(mPriceEditText.getText().toString(), 2));
+        String salesString = mSalesTextView.getText().toString().trim();
+        String imageString = mImageLink;
 
         // If no cellphone was added, return to previous activity without saving
         // any data
         if (mCurrentPhoneUri == null &&
                 TextUtils.isEmpty(nameString) &&
                 TextUtils.isEmpty(quantityString) &&
-                TextUtils.isEmpty(priceString)) {
+                TextUtils.isEmpty(priceString) &&
+                TextUtils.isEmpty(imageString)) {
             return;
         }
 
@@ -188,8 +289,9 @@ public class EditorActivity extends AppCompatActivity
         ContentValues values = new ContentValues();
         values.put(PhoneEntry.COLUMN_PHONE_NAME, nameString);
         values.put(PhoneEntry.COLUMN_PHONE_QUANTITY, quantityString);
-        values.put(PhoneEntry.COLUMN_PHONE_PRICE, priceString);
-        values.put(PhoneEntry.COLUMN_PHONE_IMAGE, imageDecodableString);
+        values.put(PhoneEntry.COLUMN_PHONE_PRICE, priceDouble);
+        values.put(PhoneEntry.COLUMN_PHONE_IMAGE, imageString);
+        values.put(PhoneEntry.COLUMN_PHONE_SALES, salesString);
 
         if (mCurrentPhoneUri == null) {
             // Insert a new phone into the provider, returning the content URI for the new cellphone
@@ -225,6 +327,22 @@ public class EditorActivity extends AppCompatActivity
         }
     }
 
+    public void orderCellphonePack() {
+        String subject = "Reorder 100 pack of " + mNameEditText.getText();
+        String message = "Product Name: " + mNameEditText.getText() +
+                "\nProduct Price: " + mPriceEditText.getText() +
+                "\nQuantity to be ordered: 100 pack";
+        String email = "vendor@gmail.com";
+        Intent intent = new Intent(Intent.ACTION_SENDTO);
+        intent.setData(Uri.parse("mailto:")); // only email apps should handle this
+        intent.putExtra(Intent.EXTRA_EMAIL, email);
+        intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+        intent.putExtra(Intent.EXTRA_TEXT, message);
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        }
+    }
+
     private void showDeleteConfirmationDialog() {
         // Create an AlertDialog.Builder and set the message, and click listeners
         // for the positive and negative buttons on the dialog.
@@ -236,15 +354,7 @@ public class EditorActivity extends AppCompatActivity
                 deleteCellPhone();
             }
         });
-        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                // User clicked the "Cancel" button, so dismiss the dialog
-                // and continue editing the cellphone.
-                if (dialog != null) {
-                    dialog.dismiss();
-                }
-            }
-        });
+        builder.setNegativeButton(R.string.cancel, null);
 
         // Create and show the AlertDialog
         AlertDialog alertDialog = builder.create();
@@ -287,6 +397,18 @@ public class EditorActivity extends AppCompatActivity
                 checkSubmission();
                 finish();
                 return true;
+            // Respond to a click on the "Sale" menu option
+            case R.id.action_sale:
+                saleCellPhone();
+                return true;
+            // Respond to a click on the "Order 100 pack" menu option
+            case R.id.action_order:
+                orderCellphonePack();
+                return true;
+            // Respond to a click on the "Receive 100 pack" menu option
+            case R.id.action_receive:
+                shipmentReceived();
+                return true;
             // Respond to a click on the "Delete" menu option
             case R.id.action_delete:
                 // Show the confirmation dialog
@@ -296,7 +418,7 @@ public class EditorActivity extends AppCompatActivity
             case android.R.id.home:
                 // If the cellphone hasn't changed, continue with navigating up to parent activity
                 // which is the {@link CatalogActivity}.
-                if (!mCellPhoneHasChanged) {
+                if (!mCellPhoneHasChanged && !mQuantityHasChanged) {
                     NavUtils.navigateUpFromSameTask(EditorActivity.this);
                     return true;
                 }
@@ -340,7 +462,8 @@ public class EditorActivity extends AppCompatActivity
                 PhoneEntry.COLUMN_PHONE_NAME,
                 PhoneEntry.COLUMN_PHONE_QUANTITY,
                 PhoneEntry.COLUMN_PHONE_PRICE,
-                PhoneEntry.COLUMN_PHONE_IMAGE};
+                PhoneEntry.COLUMN_PHONE_IMAGE,
+                PhoneEntry.COLUMN_PHONE_SALES};
 
         return new CursorLoader(this, mCurrentPhoneUri, projection, null, null, null);
     }
@@ -356,37 +479,50 @@ public class EditorActivity extends AppCompatActivity
         if (cursor.moveToFirst()) {
             // Find the columns of cellphone attributes that we're interested in
             int nameColumnIndex = cursor.getColumnIndex(PhoneEntry.COLUMN_PHONE_NAME);
-            int quantityColumnIndex = cursor.getColumnIndex(PhoneEntry.COLUMN_PHONE_QUANTITY);
             int priceColumnIndex = cursor.getColumnIndex(PhoneEntry.COLUMN_PHONE_PRICE);
+            int quantityColumnIndex = cursor.getColumnIndex(PhoneEntry.COLUMN_PHONE_QUANTITY);
             int imageColumnIndex = cursor.getColumnIndex(PhoneEntry.COLUMN_PHONE_IMAGE);
+            int salesColumnIndex = cursor.getColumnIndex(PhoneEntry.COLUMN_PHONE_SALES);
 
             // Extract out the value from the Cursor for the given column index
             String name = cursor.getString(nameColumnIndex);
             int quantity = cursor.getInt(quantityColumnIndex);
-            double price = cursor.getInt(priceColumnIndex);
+            double price = cursor.getDouble(priceColumnIndex);
             String image = cursor.getString(imageColumnIndex);
+            int sales = cursor.getInt(salesColumnIndex);
 
             // Update the views on the screen with the values from the database
             mNameEditText.setText(name);
             mQuantityEditText.setText(Integer.toString(quantity));
-            mPriceEditText.setText(Double.toString(price));
-            mCellphoneImageView.setImageBitmap(BitmapFactory.decodeFile(image));
-        }
+            mPriceEditText.setText(String.format("%.2f", price));
+            mSalesTextView.setText(Integer.toString(sales));
 
+            // If there's no image uploaded, do not try to parse the image link. Set the ImageView
+            // null.
+            if (image == null) {
+                mCellphoneImageView.setImageURI(null);
+                mCellphoneImageView.setVisibility(View.GONE);
+
+            } else {
+                mCellphoneImageView.setImageURI(Uri.parse(image));
+            }
+        }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         // If the loader is invalidated, clear out all the data from the input fields.
         mNameEditText.setText("");
-        mQuantityEditText.setText("");
         mPriceEditText.setText("");
+        mQuantityEditText.setText("");
+        mCellphoneImageView.setImageURI(null);
+        mSalesTextView.setText("");
     }
 
     // On click method for the image upload
-    public void UploadImage(View v) {
-            openImageSelector();
-        }
+    public void uploadImage(View v) {
+        openImageSelector();
+    }
 
     public void openImageSelector() {
         Intent intent;
@@ -405,45 +541,35 @@ public class EditorActivity extends AppCompatActivity
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
         super.onActivityResult(requestCode, resultCode, resultData);
-        try {
-            // The ACTION_OPEN_DOCUMENT intent was sent with the request code READ_REQUEST_CODE.
-            // If the request code seen here doesn't match, it's the response to some other intent,
-            // and the below code shouldn't run at all.
+        // The ACTION_OPEN_DOCUMENT intent was sent with the request code READ_REQUEST_CODE.
+        // If the request code seen here doesn't match, it's the response to some other intent,
+        // and the below code shouldn't run at all.
 
-            if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK) {
-                // The document selected by the user won't be returned in the intent.
-                // Instead, a URI to that document will be contained in the return intent
-                // provided to this method as a parameter.  Pull that uri using "resultData.getData()"
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK) {
+            // The document selected by the user won't be returned in the intent.
+            // Instead, a URI to that document will be contained in the return intent
+            // provided to this method as a parameter.  Pull that uri using "resultData.getData()"
 
-                Uri selectedImage = resultData.getData();
-                String[] filePathColumn = {
-                        MediaStore.Images.Media.DATA};
+            // URI for the image to be uploaded. Convert the link to a string
+            Uri selectedImage = resultData.getData();
+            mImageLink = selectedImage.toString();
 
-                //Get the cursor
-                Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
-                // Move to first row
-                cursor.moveToFirst();
-
-                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                imageDecodableString = cursor.getString(columnIndex);
-                cursor.close();
-
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
+            try {
+                Bitmap d = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
                 // Find the ImageView
                 ImageView imageView = (ImageView) findViewById(R.id.cellphone_image);
                 // Set the image in the imageView after decoding the String
+                imageView.setVisibility(View.VISIBLE);
                 imageView.setImageBitmap(getBitmapFromUri(selectedImage));
 
-            } else {
-                Toast.makeText(this, "Pick an image", Toast.LENGTH_SHORT).show();
+            } catch (IOException e) {
+                Toast.makeText(this, "Something went wrong", Toast.LENGTH_LONG)
+                        .show();
             }
-        } catch (Exception e) {
-            Toast.makeText(this, "Something went wrong", Toast.LENGTH_LONG)
-                    .show();
         }
     }
 
-
+    // Convert image to bitmap and scale down the image to fit the ImageView
     public Bitmap getBitmapFromUri(Uri uri) {
         if (uri == null || uri.toString().isEmpty())
             return null;
@@ -536,7 +662,7 @@ public class EditorActivity extends AppCompatActivity
     @Override
     public void onBackPressed() {
         // If the cellphone hasn't changed, continue with handling back button press
-        if (!mCellPhoneHasChanged) {
+        if (!mCellPhoneHasChanged && !mQuantityHasChanged) {
             super.onBackPressed();
             return;
         }
