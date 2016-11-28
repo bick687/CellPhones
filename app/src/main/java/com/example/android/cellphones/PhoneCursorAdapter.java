@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.android.cellphones.data.PhoneContract.PhoneEntry;
 
@@ -96,7 +97,6 @@ public class PhoneCursorAdapter extends CursorAdapter {
             @Override
             public void onClick(View view) {
                 ContentValues values = new ContentValues();
-
                 // If there are any cellphones to sell. Update the quantity and sale field
                 // simultaneously.
                 if (quantity > 0) {
@@ -113,6 +113,8 @@ public class PhoneCursorAdapter extends CursorAdapter {
                     uri = ContentUris.withAppendedId(PhoneEntry.CONTENT_URI, id);
                     context.getContentResolver().update(uri, values, null, null);
                     holder.salesTextView.setText("Sold(Units): " + mSales);
+                } else {
+                    Toast.makeText(context, "No more phones to sell.", Toast.LENGTH_SHORT).show();
                 }
                 context.getContentResolver().notifyChange(PhoneEntry.CONTENT_URI, null);
             }
