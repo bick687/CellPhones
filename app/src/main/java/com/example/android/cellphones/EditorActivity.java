@@ -44,12 +44,16 @@ public class EditorActivity extends AppCompatActivity
     private static final int URL_LOADER = 0;
     private static final int PICK_IMAGE_REQUEST = 0;
     private static final String STATE_URI = "STATE_URI";
+<<<<<<< HEAD
+    /**     * EditText field to enter the cellphone's name
+=======
     // Add image button
     public Button mAddImageButton;
     // Link to the cellphone image to be stored in the database
     String mImageLink;
     /**
      * EditText field to enter the cellphone's name
+>>>>>>> refs/remotes/origin/Cellphonesbeta
      */
     private EditText mNameEditText;
     /**
